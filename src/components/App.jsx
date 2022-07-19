@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { nanoid } from 'nanoid/non-secure'
-import {Form} from "./Form/Form";
+import { Form } from "./Form/Form";
 import Filter from "./Filter/Filter";
 import { ContactList } from "./ContactList/ContactList";
 import toast, { Toaster } from 'react-hot-toast';
@@ -8,20 +8,15 @@ import toast, { Toaster } from 'react-hot-toast';
 
 
 
-export class App extends Component { 
+export class App extends Component {
   state = {
-  contacts: [
-    {id: 'id-1', name: 'Rosie Simpson', number: '459-12-56'},
-    {id: 'id-2', name: 'Hermione Kline', number: '443-89-12'},
-    {id: 'id-3', name: 'Eden Clements', number: '645-17-79'},
-    {id: 'id-4', name: 'Annie Copeland', number: '227-91-26'},
-  ],
-  filter: ''
+    contacts: [],
+    filter: ''
   }
   // alert = useAlert();
 
 
-  formSubmit = (name, number) => { 
+  formSubmit = (name, number) => {
     const id = nanoid();
     const contact = {
       id,
@@ -37,30 +32,47 @@ export class App extends Component {
       return;
     }
 
-    this.setState(({contacts}) => ({
+    this.setState(({ contacts }) => ({
       contacts: [contact, ...contacts],
     }))
     console.log([this.state.contacts])
   };
 
-  changeFilter = (e) => { 
+  changeFilter = (e) => {
     this.setState({ filter: e.currentTarget.value });
   };
 
-   getVisibleContacts = () => { 
+  getVisibleContacts = () => {
     const normalizedFil = this.state.filter.toLocaleLowerCase()
     return this.state.contacts.filter(contact =>
       contact.name.toLocaleLowerCase().includes(normalizedFil))
   };
 
-  deleteContact = contactId => { 
+  deleteContact = contactId => {
     this.setState(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== contactId),
     }))
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
+
+    };
+  };
+
+  componentDidMount() {
+    const contacts = localStorage.getItem("contacts");
+    const parsedContacts = JSON.parse(contacts);
+
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts })
+    }
+
+  };
+
   render() {
-    
+
     const visibleContacts = this.getVisibleContacts();
 
     return (
@@ -73,7 +85,7 @@ export class App extends Component {
         />
         <h2>Contacts</h2>
         <Filter value={this.state.filter} onChange={this.changeFilter} />
-        <ContactList contacts={visibleContacts} onDeleteContact={ this.deleteContact } />
+        <ContactList contacts={visibleContacts} onDeleteContact={this.deleteContact} />
       </div>
     )
   };
